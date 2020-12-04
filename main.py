@@ -64,27 +64,35 @@ def search_item():
         print(e)
 
 
-def select_item_size(size):
+def select_item_size(size_input):
     """Selects the size of the item.
     
     Add:
-    - [ ] Priority list (S,XL,L,M)
+    - [X] Priority list (S,XL,L,M)
     """
-    try: 
-        if size == 'S':
-            size = 'Small'
-        elif size == 'M':
-            size = 'Medium'
-        elif size == 'L':
-            size = 'Large'
-        elif size == 'XL':
-            size = 'XLarge'
 
-        Select(driver.find_element_by_xpath('//*[@id="size"]')).select_by_visible_text(size)
-        print(f'[SUCCESS] Size "{size}" selected.')
-    except Exception as e:
-        print(f'[ERROR] Size "{size}" out of stock!')
-        print(e)
+    size_list = size_input.split(", ")
+
+    for i in range (0,len(size_list)):
+        if size_list[i] == 'S':
+            size_list[i] = 'Small'
+        elif size_list[i] == 'M':
+            size_list[i] = 'Medium'
+        elif size_list[i] == 'L':
+            size_list[i] = 'Large'
+        elif size_list[i] == 'XL':
+            size_list[i] = 'XLarge'
+        try:
+            Select(driver.find_element_by_xpath('//*[@id="size"]')).select_by_visible_text(size_list[i])
+            print(f'[SUCCESS] Size "{size_list[i]}" selected.')
+            break
+        except Exception as e:
+            print(f'[ERROR] Size "{size_list[i]}" out of stock!')
+            try:
+                print(f'[TRYING] Checking "{size_list[i+1]}"...')
+            except IndexError:
+                print(f'[FAIL] Ending program...')
+                break
 
 
 def add_to_basket():
@@ -193,12 +201,12 @@ SHIPPING_CONFIG = input('Shipping config "id" [1|2|3...]: ')
 CARD_CONFIG = input('Card config "id" [1|2|3...]: ')
 
 ITEM = search_item()
-SIZE = input('Select size [S|M|L|XL]: ')
+SIZES = input('Enter which size(s) you want in decreasing prirotiy (i.e  S, XL...): ')
 
 input("Press ENTER to start")
 start_time = time.time()  # Start timer 
 visit_url(SHOP_URL + f'/{ITEM}')
-select_item_size(SIZE)
+select_item_size(SIZES)
 add_to_basket()
 checkout()
 enter_shipping_info(SHIPPING_CONFIG)
