@@ -18,7 +18,6 @@ driver = webdriver.Chrome(executable_path=r'./chromedriver.exe', options=chrome_
 MAIN_URL = 'https://www.supremenewyork.com'
 SHOP_URL = 'https://www.supremenewyork.com/shop'
 CHECKOUT_URL = 'https://www.supremenewyork.com/checkout'
-TEST_URL = 'https://www.supremenewyork.com/shop/305555'
 
 
 # Defining functions
@@ -32,13 +31,59 @@ def visit_url(url):
         print(e)
 
 
-def search_item(item): # under development
-    """Looks for a specific item."""
+def search_item():
+    """Find the value which includes the most of keywords.
+    
+    For error handling:
+     - [ ] Ignore extra words
+    """
     try: 
-        #req = requests.get()
-        print(f'[SUCCESS] {item} found.')
+        category = input('Select a category [Skate|Accessories|Tops/Sweaters|Pants|Jackets|Sweatshirts|Shirts|T-Shirts|Hats|Bags|new]: ')
+        keyword_input = input('Enter the keywords of the item (i.e  box, logo, sweatshirt): ')
+
+        keyword_list = keyword_input.split(", ")
+
+        shop_json = open('./data/shop/shop_after_box_logo_drop.json')  # offline json file, switch this to online!!
+        data_obj = json.loads(shop_json.read())
+
+        old_counter = 0
+        for value in data_obj['products_and_categories'][category]:  # For every value in a category:
+            counter = 0  # Counter resets for every value in the category.
+            for word in keyword_list:  # Iterate every keyword that user has entered.
+                if word.lower() in value['name'].lower():  # If keyword inside value:  
+                    counter += 1  # counter +1 if the value has a keyword in it.
+                    # do this for every word in the value.
+            if counter > old_counter:  # If the latest value has the most keywords compared to previous value:
+                old_counter = counter  
+                best_value = value  # Save the value
+        #print(best_value)  # print the found json object
+        return best_value['id']  # return the id of the item
+
     except Exception as e:
-        print(f'[ERROR] {item} not found!')
+        print(f'[ERROR] item not found!')
+        print(e)
+
+
+def select_item_size(size):
+    """Selects the size of the item.
+    
+    Add:
+    - [ ] Priority list (S,XL,L,M)
+    """
+    try: 
+        if size == 'S':
+            size = 'Small'
+        elif size == 'M':
+            size = 'Medium'
+        elif size == 'L':
+            size = 'Large'
+        elif size == 'XL':
+            size = 'XLarge'
+
+        Select(driver.find_element_by_xpath('//*[@id="size"]')).select_by_visible_text(size)
+        print(f'[SUCCESS] Size "{size}" selected.')
+    except Exception as e:
+        print(f'[ERROR] Size "{size}" out of stock!')
         print(e)
 
 
@@ -49,12 +94,16 @@ def add_to_basket():
         driver.find_element_by_xpath('//*[@id="add-remove-buttons"]/input').click()
         print(f'[SUCCESS] Added item to basket.')
     except Exception as e:
-        print(f'[ERROR] Could not add item to basket!')
+        print(f'[ERROR] Item out of stock!')
         print(e)
 
 
 def checkout():
-    """Clicks "checkout" button and proceeds to /checkout."""
+    """Clicks "checkout" button and proceeds to /checkout.
+    
+    For Error Handling:
+     - [ ] If clicking checkout now fails, directly go to the checkout link.
+    """
     try: 
         WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, f'/html/body/div[2]/div/div[1]/div/a[2]')))
         time.sleep(0.2) # stops and waits "checkout" button to appear. This is under development
@@ -139,12 +188,17 @@ def process_payment():
 
 
 visit_url(SHOP_URL)
-ITEM = input('Enter item "id": ') # 305555
-SHIPPING_CONFIG = input('Shipping config "id": ') # 1
-CARD_CONFIG = input('Card config "id": ') # 1
+
+SHIPPING_CONFIG = input('Shipping config "id" [1|2|3...]: ')
+CARD_CONFIG = input('Card config "id" [1|2|3...]: ')
+
+ITEM = search_item()
+SIZE = input('Select size [S|M|L|XL]: ')
+
 input("Press ENTER to start")
-start_time = time.time() #Start timer 
+start_time = time.time()  # Start timer 
 visit_url(SHOP_URL + f'/{ITEM}')
+select_item_size(SIZE)
 add_to_basket()
 checkout()
 enter_shipping_info(SHIPPING_CONFIG)

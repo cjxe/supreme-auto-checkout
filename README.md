@@ -29,13 +29,18 @@ pip install requests
 
 ### Running the file
 ![console](https://i.ibb.co/1TPn4kR/how-to-use.png)
-1. Enter the "id" of the item you want to purchase.
-2. Enter which shipping configuration you want to use.
-3. Enter which card configuration oyu want to use. 
+1. Enter which shipping configuration you want to use (i.e  1).
+2. Enter which card configuration oyu want to use (i.e  1). 
+3. Enter category (i.e  Pants).
+4. Enter keywords (i.e  Cargo).
+5. Enter size (i.e L).
 
 ### To Do List
 - [X] Load [config](https://github.com/cjxe/supreme-auto-checkout/tree/main/data) files into the app.
-- [ ] Use [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) to scrape the data from the shop's website.
+- [X] Use ~~[Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)~~ Selenium and JSON to scrape the data from the shop's website.
+- [X] Make a search function which takes a list of words and then looks up in the json data and finds the item.
+- [X] Add size selection.
+- [ ] Accept a list of sizes and iteratively try every size until the bot finds one in stock.
 - [ ] Better error handling (possibly with requests library).
 - [ ] Create a similar bot mainly using Requests instead of Selenium.
 
@@ -43,4 +48,4 @@ pip install requests
 - [PEP 8](https://www.python.org/dev/peps/pep-0008/) is followed while coding this app.
 - Checking out works at normal times.
 
-
+#### USE AT YOUR OWN RISK!!
