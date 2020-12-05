@@ -6,7 +6,10 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 import time, json
 import requests
+from termcolor import colored, cprint  ### SUCCESS=green, TRYING=yellow, ERROR/FAIL=red, SYSTEM=magenta ###
+import colorama
 
+colorama.init()  # Bugfixing colours on Windows
 
 # Launching chrome drivers
 chrome_options = Options()
@@ -25,18 +28,14 @@ def visit_url(url):
     """Visits a url/link/webpage."""
     try:
         driver.get(url)
-        print(f'[SUCCESS] Loaded "{url}".')
+        cprint(f'Loaded "{url}".', 'green')
     except Exception as e:
-        print(f'[ERROR] Website "{url}" can not be reached!.')
+        cprint(f'Website "{url}" can not be reached!.', 'red')
         print(e)
 
 
 def search_item():
-    """Find the value which includes the most of keywords.
-    
-    For error handling:
-     - [ ] Ignore extra words
-    """
+    """Find the value which includes the most of keywords."""
     try: 
         category = input('Select a category [Skate|Accessories|Tops/Sweaters|Pants|Jackets|Sweatshirts|Shirts|T-Shirts|Hats|Bags|new]: ')
         keyword_input = input('Enter the keywords of the item (i.e  box, logo, sweatshirt): ')
@@ -60,7 +59,37 @@ def search_item():
         return best_value['id']  # return the id of the item
 
     except Exception as e:
-        print(f'[ERROR] item not found!')
+        cprint(f'Item not found!', 'red')
+        print(e)
+
+
+def select_item_colour(colour_input, id):
+    """Selects item colour.
+
+    - [X] Switch to online database.
+    - [ ] Priority list (Grey, Purple...)
+    """
+    try:
+        colour_list = colour_input.split(", ")
+
+        item_url = requests.get(f'https://www.supremenewyork.com/shop/{ITEM}.json')
+        data_obj = item_url.json()
+        
+        old_counter = 0
+        for value in data_obj['styles']:  # For every value in a style:
+            counter = 0  # Counter resets for every value in the category.
+            for word in colour_list:  # Iterate every keyword that user has entered.
+                if word.lower() in value['name'].lower():  # If keyword inside value:  
+                    counter += 1  # counter +1 if the value has a keyword in it.
+                    # do this for every word in the value.
+            if counter > old_counter:  # If the latest value has the most keywords compared to previous value:
+                old_counter = counter  
+                best_value = value  # Save the value
+                
+        driver.find_element_by_xpath(f'//*[@id="details"]/ul/li//a[@data-style-name="{best_value["name"]}"][@data-style-id="{best_value["id"]}"]').click()
+        cprint(f'Colour "{best_value["name"]}" selected.', 'green')
+    except Exception as e:
+        cprint(f'Colour "{best_value["name"]}" not found!', 'red')
         print(e)
 
 
@@ -84,14 +113,14 @@ def select_item_size(size_input):
             size_list[i] = 'XLarge'
         try:
             Select(driver.find_element_by_xpath('//*[@id="size"]')).select_by_visible_text(size_list[i])
-            print(f'[SUCCESS] Size "{size_list[i]}" selected.')
+            cprint(f'Size "{size_list[i]}" selected.', 'green')
             break
         except Exception as e:
-            print(f'[ERROR] Size "{size_list[i]}" out of stock!')
+            cprint(f'Size "{size_list[i]}" out of stock!', 'red')
             try:
-                print(f'[TRYING] Checking "{size_list[i+1]}"...')
+                cprint(f'Checking "{size_list[i+1]}"...', 'yellow')
             except IndexError:
-                print(f'[FAIL] Ending program...')
+                cprint(f'Ending program...', 'magenta', attrs=['bold'])
                 break
 
 
@@ -100,9 +129,9 @@ def add_to_basket():
     try:
         WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, f'//*[@id="add-remove-buttons"]/input')))
         driver.find_element_by_xpath('//*[@id="add-remove-buttons"]/input').click()
-        print(f'[SUCCESS] Added item to basket.')
+        cprint(f'Added item to basket.', 'green')
     except Exception as e:
-        print(f'[ERROR] Item out of stock!')
+        cprint(f'Item out of stock!', 'red')
         print(e)
 
 
@@ -116,9 +145,9 @@ def checkout():
         WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, f'/html/body/div[2]/div/div[1]/div/a[2]')))
         time.sleep(0.2) # stops and waits "checkout" button to appear. This is under development
         driver.find_element_by_xpath('/html/body/div[2]/div/div[1]/div/a[2]').click()
-        print('[SUCCESS] Clicked "checkout now" button.')
+        cprint('Clicked "checkout now" button.', 'green')
     except Exception as e:
-        print('[ERROR] Could not click "checkout now" button!')
+        cprint('Could not click "checkout now" button!', 'red')
         print(e)
 
 
@@ -150,9 +179,9 @@ def enter_shipping_info(ship_config):
             driver.find_element_by_xpath('//*[@id="order_billing_city"]').send_keys(data['city'])
             driver.find_element_by_xpath('//*[@id="order_billing_zip"]').send_keys(data['postcode'])
             Select(driver.find_element_by_xpath('//*[@id="order_billing_country"]')).select_by_visible_text(data['country'])
-        print('[SUCCESS] Entered shipping details.')
+        cprint('Entered shipping details.', 'green')
     except Exception as e:
-        print('[ERROR] Could not enter shipping details!')
+        cprint('Could not enter shipping details!', 'red')
         print(e)
 
 
@@ -176,21 +205,23 @@ def enter_card_info(card_config):
             Select(driver.find_element_by_xpath('//*[@id="credit_card_year"]')).select_by_visible_text(data['cardYear'])
             driver.find_element_by_xpath('//*[@placeholder="CVV"]').send_keys(data['cardCVV'])
             driver.find_element_by_xpath('//*[@id="cart-cc"]/fieldset/p/label/div/ins').click()  # terms and conditions
-        print('[SUCCESS] Entered card details.')
+        cprint('Entered card details.', 'green')
     except Exception as e:
-        print('[ERROR] Could not enter card details!')
+        cprint('Could not enter card details!', 'red')
         print(e)
 
 
 def process_payment():
-    """Clicks "process payment" button."""
+    """Clicks "process payment" button.
+    
+    For Error handling:
+    - [ ] Scrape data after checkout and see if it really checked out. 
+    """
     try:
         driver.find_element_by_xpath('//*[@id="pay"]/input').click()
-        print(f'[SUCCESS] Clicked "process payment" button.')
-        # print(f'[SUCCESS] Paid for the item.')
-        # Add error correction: Scrape data after checkout and see if it really checked out. 
+        cprint(f'Clicked "process payment" button.', 'green')
     except Exception as e:
-        print(f'[ERROR] Could not click "process payment" button!')
+        cprint(f'Could not click "process payment" button!', 'red')
         print(e)
 
 
@@ -201,11 +232,15 @@ SHIPPING_CONFIG = input('Shipping config "id" [1|2|3...]: ')
 CARD_CONFIG = input('Card config "id" [1|2|3...]: ')
 
 ITEM = search_item()
+
+COLOUR = input('Enter which colour you want [Purple|Black|Navy...]: ')
 SIZES = input('Enter which size(s) you want in decreasing prirotiy (i.e  S, XL...): ')
 
 input("Press ENTER to start")
 start_time = time.time()  # Start timer 
 visit_url(SHOP_URL + f'/{ITEM}')
+
+select_item_colour(COLOUR, ITEM)
 select_item_size(SIZES)
 add_to_basket()
 checkout()
@@ -213,7 +248,7 @@ enter_shipping_info(SHIPPING_CONFIG)
 enter_card_info(CARD_CONFIG)
 #process_payment()
 elapsed_time = time.time() - start_time # End timer
-print(f'Total processing time: {float(round(elapsed_time,2))} seconds')
+cprint(f'Total processing time: {float(round(elapsed_time,2))} seconds', 'magenta', attrs=['bold'])
 
 
 time.sleep(3000) # Wait for 50 minutes before manually closing Chrome.
