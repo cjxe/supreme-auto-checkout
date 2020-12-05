@@ -1,5 +1,19 @@
 # Automated checkout for Supreme 👕
 
+
+<p align="center">
+	*demonstration*
+</p>
+
+<p align="center">
+  <img src="https://i.ibb.co/9yZzmNx/ezgif-com-gif-maker.gif">
+</p>
+
+<p align="center">
+	(Card details are not real!)
+</p>
+
+
 ## Getting Started
 Python and a few libraries are necessary to run the file.
 
@@ -27,7 +41,7 @@ pip install selenium
 pip install requests
 ```
 
-### Running the file
+### Usage
 ![console](https://i.ibb.co/1TPn4kR/how-to-use.png)
 1. Enter which shipping configuration you want to use (i.e  1).
 2. Enter which card configuration you want to use (i.e  1). 
@@ -41,6 +55,8 @@ pip install requests
 - [X] Make a search function which takes a list of words and then looks up in the json data and finds the item.
 - [X] Add size selection.
 - [X] Accept a list of sizes and iteratively try every size until the bot finds one in stock.
+- [ ] Select the colour of the item.
+- [ ] If found captcha, wait until it's solved.
 - [ ] Better error handling (possibly with requests library).
 - [ ] Create a similar bot mainly using Requests instead of Selenium.
 
@@ -49,3 +65,4 @@ pip install requests
 - Checking out works at normal times.
 
 #### USE AT YOUR OWN RISK!!
+[![HitCount](http://hits.dwyl.com/cjxe/supreme-auto-checkout.svg)](http://hits.dwyl.com/cjxe/supreme-auto-checkout)
