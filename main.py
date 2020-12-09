@@ -14,6 +14,10 @@ colorama.init()  # Bugfixing colours on Windows
 # Launching chrome drivers
 chrome_options = Options()
 #chrome_options.add_argument("--headless")  # remove the "#" at the start of the line to launch Chrome in "headless" mode.
+#prefs = {"profile.managed_default_content_settings.images": 2}  # disables loading images 
+#chrome_options.add_experimental_option("prefs", prefs)  # adds "disable img" option to chrome's options
+# CAN'T ADD IMAGELESS BECAUSE OF CAPTCHA
+
 driver = webdriver.Chrome(executable_path=r'./chromedriver.exe', options=chrome_options)
 
 
@@ -34,16 +38,13 @@ def visit_url(url):
         print(e)
 
 
-def search_item():
+def search_item(category, keywords):
     """Find the value which includes the most of keywords."""
     try: 
-        category = input('Select a category [Skate|Accessories|Tops/Sweaters|Pants|Jackets|Sweatshirts|Shirts|T-Shirts|Hats|Bags|new]: ')
-        keyword_input = input('Enter the keywords of the item (i.e  box, logo, sweatshirt): ')
+        keyword_list = keywords.split(", ")
 
-        keyword_list = keyword_input.split(", ")
-
-        shop_json = open('./data/shop/shop_after_box_logo_drop.json')  # offline json file, switch this to online!!
-        data_obj = json.loads(shop_json.read())
+        item_url = requests.get(f'https://www.supremenewyork.com/shop.json')
+        data_obj = item_url.json()
 
         old_counter = 0
         for value in data_obj['products_and_categories'][category]:  # For every value in a category:
@@ -72,7 +73,7 @@ def select_item_colour(colour_input, id):
     try:
         colour_list = colour_input.split(", ")
 
-        item_url = requests.get(f'https://www.supremenewyork.com/shop/{ITEM}.json')
+        item_url = requests.get(f'https://www.supremenewyork.com/shop/{id}.json')
         data_obj = item_url.json()
         
         old_counter = 0
@@ -231,16 +232,18 @@ visit_url(SHOP_URL)
 SHIPPING_CONFIG = input('Shipping config "id" [1|2|3...]: ')
 CARD_CONFIG = input('Card config "id" [1|2|3...]: ')
 
-ITEM = search_item()
+CATEGORY = input('Select a category [Skate|Accessories|Tops/Sweaters|Pants|Jackets|Sweatshirts|Shirts|T-Shirts|Hats|Bags|new]: ')
+KEYWORD_INPUT = input('Enter the keywords of the item (i.e  box, logo, sweatshirt): ')
 
 COLOUR = input('Enter which colour you want [Purple|Black|Navy...]: ')
 SIZES = input('Enter which size(s) you want in decreasing prirotiy (i.e  S, XL...): ')
 
 input("Press ENTER to start")
 start_time = time.time()  # Start timer 
-visit_url(SHOP_URL + f'/{ITEM}')
+ITEM_ID = search_item(CATEGORY, KEYWORD_INPUT)
+visit_url(SHOP_URL + f'/{ITEM_ID}')
 
-select_item_colour(COLOUR, ITEM)
+select_item_colour(COLOUR, ITEM_ID)
 select_item_size(SIZES)
 add_to_basket()
 checkout()
