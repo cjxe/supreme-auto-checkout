@@ -33,7 +33,7 @@ Python and a few libraries are necessary to run the file.
 ### Installing
 [Click here](https://github.com/cjxe/supreme-auto-checkout/archive/main.zip) to download **or** copy 
 ```
-git clone https://github.com/cjxe/papajohnsTR-auto-checkout
+git clone https://github.com/cjxe/supreme-auto-checkout
 ``` 
 and right click on the command-line to paste.
 
